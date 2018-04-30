@@ -1,0 +1,102 @@
+{%  extends 'index.html' %}
+
+{% block content %}
+{% verbatim %}
+<div id="app">
+    <article-list></article-list>
+</div>
+{% endverbatim %}
+{% endblock %}
+
+
+{% block js %}
+{% verbatim %}
+<script type="text/javascript">
+    Vue.component('article-list', {
+        template: '<ul>\
+            <li v-for="article in articles">\
+                <div>\
+                    {{ article.title }}\
+                    <button v-on:click="getArticle(article.id)">update</button>\
+                    <button v-on:click="deleteArticle(article.id)">delete</button>\
+                </div>\
+            </li>\
+        </ul>',
+        data: function() {
+            return {
+                articles: [],
+                newArticle: {
+                    title: '',
+                    description: ''
+                },
+                currentArticle: {}
+            }
+        },
+        mounted: function() {
+            this.getArticles();
+        },
+        methods: {
+            deleteArticle: function(id) {
+                var resource = this.$resource('/api/article{/id}/');
+                resource.remove({id: id}, this.currentArticle)
+                    .then((response) => {
+                        this.getArticles();
+                    }).catch((error) => {
+
+                    });
+            },
+            updateArticle: function(e) {
+                var resource = this.$resource('/api/article{/id}/');
+                resource.update({id: this.currentArticle.id}, this.currentArticle)
+                    .then((response) => {
+                        this.currentArticle = {};
+                        this.getArticles();
+                    }).catch((error) => {
+
+                    });
+            },
+            addArticle: function(e) {
+                var resource = this.$resource('/api/article/');
+                resource.save({}, this.newArticle)
+                    .then((response) => {
+                        this.getArticles();
+                    }).catch((error) => {
+
+                    });
+            },
+            getArticle: function(id) {
+                var resource = this.$resource('/api/article{/id}');
+
+                resource.get({id:id})
+                    .then((response) => {
+                        this.currentArticle  = response.data;
+                    }).catch((error) => {
+
+                    });
+            },
+            getArticles: function() {
+                var resource = this.$resource('/api/article/');
+
+                resource.get()
+                    .then((response) => {
+                        this.articles = response.data;
+                    }).catch((error) => {
+
+                    });
+            },
+        }
+    })
+    var app = new Vue({
+        el: '#app',
+        data: {
+            // articles: [],
+            // newArticle: {
+            //     title: '',
+            //     description: ''
+            // },
+            // currentArticle: {}
+        }
+    })
+</script>
+{% endverbatim %}
+{% endblock %}
